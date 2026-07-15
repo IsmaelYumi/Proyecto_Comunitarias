@@ -25,11 +25,39 @@ const nuevoRegistro = {
         throw new Error("Error al guardar el registro:");
     }
 }
-
+async guardarNivel(nivel:number){
+    try {
+      const docRef = await db.collection('Nivel').add({
+        nivel,
+        createdAt: new Date()
+      });
+      return {
+        id: docRef.id,
+        nivel,
+        createdAt: new Date()
+      };
+    } catch (error: any) {
+      throw new Error('Error al guardar el nivel: ' + error.message);
+    }
+}
+async guardarPresion(presion:number){
+    try {
+      const docRef = await db.collection('Presion').add({
+        presion,
+        createdAt: new Date()
+      });
+      return {
+        id: docRef.id,
+        presion,
+        createdAt: new Date()
+      };
+    } catch (error: any) {
+      throw new Error('Error al guardar la presion: ' + error.message);
+    }
+}
 async getRegistros() {
     try {
       const snapshot = await db.collection('Registros').orderBy('createdAt', 'desc').get();
-
       if (snapshot.empty) {
         return [];
       }
