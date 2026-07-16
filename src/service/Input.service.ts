@@ -83,6 +83,7 @@ async getRegistros() {
           id: doc.id,
           nivel: data.nivel,
           presion: data.presion,
+          createdAt: timestamp?.toDate ? timestamp.toDate().toISOString() : String(timestamp),
           fechaHora
         };
       });
