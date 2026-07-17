@@ -12,7 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     <!-- Styles -->
-    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="styles.css">
 
     <!-- Favicon -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💧</text></svg>">
@@ -68,6 +68,31 @@
         </svg>
         <span id="error-message">Error de conexión con la API</span>
         <button class="error-close" id="error-close" aria-label="Cerrar error">×</button>
+    </div>
+
+    <!-- ═══════════ Retry Modal ═══════════ -->
+    <div class="modal-overlay" id="retry-modal" style="display: none;">
+        <div class="modal-box">
+            <div class="modal-icon">
+                <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+            </div>
+            <h2 class="modal-title">No se pudieron cargar los datos</h2>
+            <p class="modal-message" id="modal-message">No se pudo conectar con el servidor. Verifica que el servidor esté encendido.</p>
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn--retry" id="modal-retry">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="1 4 1 10 7 10"/>
+                        <path d="M3.51 15a9 9 0 1 0 .49-3.17"/>
+                    </svg>
+                    Reintentar
+                </button>
+                <button class="modal-btn modal-btn--cancel" id="modal-cancel">Cancelar</button>
+            </div>
+        </div>
     </div>
 
     <!-- ═══════════ Main Content ═══════════ -->
@@ -272,7 +297,7 @@
 
     <!-- ═══════════ Scripts ═══════════ -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.9/dist/chart.umd.min.js"></script>
-    <script src="/app.js"></script>
+    <script src="app.js"></script>
 
 </body>
 </html>

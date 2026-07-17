@@ -4,9 +4,9 @@
   "main": "dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "set NODE_OPTIONS=--use-system-ca && npx -y tsx watch src/index.ts",
+    "dev": "npx -y tsx watch src/index.ts",
     "build": "tsc",
-    "start": "set NODE_OPTIONS=--use-system-ca && node dist/index.js"
+    "start": "node dist/index.js"
   },
   "keywords": [],
   "author": "",

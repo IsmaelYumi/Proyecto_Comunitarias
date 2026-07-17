@@ -72,6 +72,12 @@ const DOM = {
 
   // Export
   exportCsv: () => document.getElementById('export-csv'),
+
+  // Retry Modal
+  retryModal: () => document.getElementById('retry-modal'),
+  modalMessage: () => document.getElementById('modal-message'),
+  modalRetry: () => document.getElementById('modal-retry'),
+  modalCancel: () => document.getElementById('modal-cancel'),
 };
 
 
@@ -102,6 +108,7 @@ async function fetchRegistros() {
     state.allData = data;
     state.error = null;
     setConnectionStatus(true);
+    hideRetryModal();
 
     // Aplicar filtro actual
     applyCurrentFilter();
@@ -112,7 +119,8 @@ async function fetchRegistros() {
     console.error('Error al obtener registros:', error);
     state.error = error.message;
     setConnectionStatus(false);
-    showError(error.message || 'No se pudo conectar con la API. Verifica que el servidor esté encendido.');
+    hideLoading();
+    showRetryModal(error.message || 'No se pudo conectar con la API. Verifica que el servidor esté encendido.');
     return null;
   }
 }
@@ -664,6 +672,23 @@ function setConnectionStatus(connected) {
 }
 
 
+// ── Retry Modal ─────────────────────────────────────
+
+function showRetryModal(message) {
+  const modal = DOM.retryModal();
+  const msgEl = DOM.modalMessage();
+  if (modal) {
+    if (msgEl) msgEl.textContent = message;
+    modal.style.display = 'flex';
+  }
+}
+
+function hideRetryModal() {
+  const modal = DOM.retryModal();
+  if (modal) modal.style.display = 'none';
+}
+
+
 // ── Navigation ─────────────────────────────────────
 
 function switchView(viewName) {
@@ -731,9 +756,25 @@ function setupEventListeners() {
   // CSV Export
   DOM.exportCsv().addEventListener('click', exportCSV);
 
+  // Retry Modal buttons
+  DOM.modalRetry().addEventListener('click', async () => {
+    hideRetryModal();
+    showLoading();
+    await fetchRegistros();
+  });
+
+  DOM.modalCancel().addEventListener('click', () => {
+    hideRetryModal();
+    hideLoading();
+    showError('Carga cancelada. Los datos no están disponibles.');
+  });
+
   // Keyboard navigation (optional accessibility)
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') hideError();
+    if (e.key === 'Escape') {
+      hideError();
+      hideRetryModal();
+    }
   });
 }
 
