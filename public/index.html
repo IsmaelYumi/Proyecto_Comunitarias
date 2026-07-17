@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AquaMonitor — Dashboard de Sensores</title>
+    <meta name="description" content="Panel de monitoreo en tiempo real para sensores de nivel y presión de agua comunitaria">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="/styles.css">
+
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💧</text></svg>">
+</head>
+<body>
+
+    <!-- ═══════════ Navbar ═══════════ -->
+    <nav class="navbar" id="navbar">
+        <div class="navbar-brand">
+            <svg class="navbar-icon" viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+            </svg>
+            <span class="navbar-title">AquaMonitor</span>
+        </div>
+        <div class="navbar-nav">
+            <button class="nav-link active" data-view="dashboard" id="nav-dashboard">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="7" height="7" rx="1"/>
+                    <rect x="14" y="3" width="7" height="7" rx="1"/>
+                    <rect x="14" y="14" width="7" height="7" rx="1"/>
+                    <rect x="3" y="14" width="7" height="7" rx="1"/>
+                </svg>
+                Dashboard
+            </button>
+            <button class="nav-link" data-view="historico" id="nav-historico">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                </svg>
+                Histórico
+            </button>
+        </div>
+        <div class="navbar-status" id="connection-status">
+            <span class="status-dot"></span>
+            <span class="status-text">Conectado</span>
+        </div>
+    </nav>
+
+    <!-- ═══════════ Loading Overlay ═══════════ -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="spinner-container">
+            <div class="spinner"></div>
+            <p class="loading-text">Cargando datos de sensores...</p>
+        </div>
+    </div>
+
+    <!-- ═══════════ Error Banner ═══════════ -->
+    <div class="error-banner" id="error-banner" style="display: none;">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="15" y1="9" x2="9" y2="15"/>
+            <line x1="9" y1="9" x2="15" y2="15"/>
+        </svg>
+        <span id="error-message">Error de conexión con la API</span>
+        <button class="error-close" id="error-close" aria-label="Cerrar error">×</button>
+    </div>
+
+    <!-- ═══════════ Main Content ═══════════ -->
+    <main class="container">
+
+        <!-- ─── Dashboard View ─── -->
+        <section class="view active" id="view-dashboard">
+
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card stat-card--nivel">
+                    <div class="stat-icon">
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>
+                            <path d="M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>
+                            <path d="M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>
+                        </svg>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-label">Último Nivel</span>
+                        <span class="stat-value" id="stat-nivel">--</span>
+                        <span class="stat-unit">unidades</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-card--presion">
+                    <div class="stat-icon">
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                        </svg>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-label">Última Presión</span>
+                        <span class="stat-value" id="stat-presion">--</span>
+                        <span class="stat-unit">unidades</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-card--total">
+                    <div class="stat-icon">
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                            <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+                            <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+                        </svg>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-label">Total Registros</span>
+                        <span class="stat-value" id="stat-total">--</span>
+                        <span class="stat-unit">registros</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-card--update">
+                    <div class="stat-icon">
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-label">Última Actualización</span>
+                        <span class="stat-value stat-value--small" id="stat-update">--</span>
+                        <span class="stat-unit" id="stat-refresh">Auto-refresh: 30s</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h2 class="chart-title">
+                            <span class="chart-dot chart-dot--nivel"></span>
+                            Sensor de Nivel
+                        </h2>
+                        <span class="chart-badge chart-badge--nivel">Tiempo Real</span>
+                    </div>
+                    <div class="chart-body">
+                        <canvas id="nivelChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h2 class="chart-title">
+                            <span class="chart-dot chart-dot--presion"></span>
+                            Sensor de Presión
+                        </h2>
+                        <span class="chart-badge chart-badge--presion">Tiempo Real</span>
+                    </div>
+                    <div class="chart-body">
+                        <canvas id="presionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ─── Historical View ─── -->
+        <section class="view" id="view-historico">
+            <div class="section-header">
+                <h1 class="section-title">Datos Históricos</h1>
+                <p class="section-subtitle">Consulta y filtra registros anteriores de los sensores</p>
+            </div>
+
+            <!-- Filters -->
+            <div class="filter-bar">
+                <div class="filter-presets">
+                    <button class="filter-btn active" data-filter="all" id="filter-all">Todos</button>
+                    <button class="filter-btn" data-filter="today" id="filter-today">Hoy</button>
+                    <button class="filter-btn" data-filter="yesterday" id="filter-yesterday">Ayer</button>
+                    <button class="filter-btn" data-filter="7days" id="filter-7days">7 días</button>
+                    <button class="filter-btn" data-filter="30days" id="filter-30days">30 días</button>
+                </div>
+                <div class="filter-dates">
+                    <div class="date-field">
+                        <label for="date-from">Desde</label>
+                        <input type="date" id="date-from" class="date-input">
+                    </div>
+                    <div class="date-field">
+                        <label for="date-to">Hasta</label>
+                        <input type="date" id="date-to" class="date-input">
+                    </div>
+                    <button class="filter-btn filter-btn--apply" id="filter-apply">Aplicar</button>
+                </div>
+                <button class="export-btn" id="export-csv">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7 10 12 15 17 10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    Exportar CSV
+                </button>
+            </div>
+
+            <!-- Filtered Charts -->
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h2 class="chart-title">
+                            <span class="chart-dot chart-dot--nivel"></span>
+                            Nivel — Histórico
+                        </h2>
+                        <span class="chart-badge" id="filter-badge-nivel">Todos</span>
+                    </div>
+                    <div class="chart-body">
+                        <canvas id="nivelHistChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h2 class="chart-title">
+                            <span class="chart-dot chart-dot--presion"></span>
+                            Presión — Histórico
+                        </h2>
+                        <span class="chart-badge" id="filter-badge-presion">Todos</span>
+                    </div>
+                    <div class="chart-body">
+                        <canvas id="presionHistChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Table -->
+            <div class="table-container">
+                <div class="table-header">
+                    <h2 class="table-title">Registros</h2>
+                    <span class="table-count" id="table-count">0 registros</span>
+                </div>
+                <div class="table-wrapper">
+                    <table id="data-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Nivel</th>
+                                <th>Presión</th>
+                                <th>Fecha y Hora</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body">
+                            <!-- Rows inserted dynamically by app.js -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="empty-state" id="empty-state" style="display: none;">
+                    <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                        <polyline points="10 9 9 9 8 9"/>
+                    </svg>
+                    <p>No se encontraron registros para el rango seleccionado</p>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- ═══════════ Footer ═══════════ -->
+    <footer class="footer">
+        <p>AquaMonitor Dashboard &copy; 2026 — Proyecto Comunitarias</p>
+    </footer>
+
+    <!-- ═══════════ Scripts ═══════════ -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.9/dist/chart.umd.min.js"></script>
+    <script src="/app.js"></script>
+
+</body>
+</html>
