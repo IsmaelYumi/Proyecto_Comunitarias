@@ -39,6 +39,12 @@
   --accent-nivel-soft: #e6f0f9;
   --accent-presion: #d35400; /* Dark orange/rust */
   --accent-presion-soft: #faebd7;
+  --accent-caudal: #00a896; /* Teal */
+  --accent-caudal-soft: #e6f7f5;
+  --accent-temp: #e74c3c; /* Red coral */
+  --accent-temp-soft: #fdedec;
+  --accent-extractor: #8e44ad; /* Purple */
+  --accent-extractor-soft: #f4ecf7;
   --accent-success: #27ae60;
   --accent-success-soft: #eafaf1;
   --accent-danger: #c0392b;
@@ -249,7 +255,7 @@ body {
 /* ── Stats Grid ── */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 16px;
   margin-bottom: 24px;
 }
@@ -283,6 +289,9 @@ body {
 
 .stat-card--nivel::before { background: var(--accent-nivel); }
 .stat-card--presion::before { background: var(--accent-presion); }
+.stat-card--caudal::before { background: var(--accent-caudal); }
+.stat-card--temperatura::before { background: var(--accent-temp); }
+.stat-card--extractor::before { background: var(--accent-extractor); }
 .stat-card--total::before { background: var(--accent-success); }
 .stat-card--update::before { background: var(--accent-purple); }
 
@@ -306,6 +315,21 @@ body {
   color: var(--accent-presion);
 }
 
+.stat-card--caudal .stat-icon {
+  background: var(--accent-caudal-soft);
+  color: var(--accent-caudal);
+}
+
+.stat-card--temperatura .stat-icon {
+  background: var(--accent-temp-soft);
+  color: var(--accent-temp);
+}
+
+.stat-card--extractor .stat-icon {
+  background: var(--accent-extractor-soft);
+  color: var(--accent-extractor);
+}
+
 .stat-card--total .stat-icon {
   background: var(--accent-success-soft);
   color: var(--accent-success);
@@ -314,6 +338,33 @@ body {
 .stat-card--update .stat-icon {
   background: var(--accent-purple-soft);
   color: var(--accent-purple);
+}
+
+.stat-status-container {
+  margin: 4px 0;
+}
+
+.badge-extractor {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.badge-extractor--on {
+  background: var(--accent-success-soft);
+  color: var(--accent-success);
+  border: 1px solid var(--accent-success);
+}
+
+.badge-extractor--off {
+  background: var(--accent-danger-soft);
+  color: var(--accent-danger);
+  border: 1px solid var(--accent-danger);
 }
 
 .stat-content {

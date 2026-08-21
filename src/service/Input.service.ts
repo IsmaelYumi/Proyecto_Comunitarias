@@ -1,17 +1,23 @@
 import { db } from '../config/firebasebase.config';
 
 export interface RegistroInput {
-  nivel: number;
+  altura: number;
   presion: number;
-
+  caudal: number;
+  temperatura: number;
+  estadoExtractor: number;
 }
+
 export class InputService {
 
 async guardarRegistro (data: RegistroInput){
     try {
 const nuevoRegistro = {
-    nivel: data.nivel,
+    altura: data.altura,
     presion: data.presion,
+    caudal: data.caudal,
+    temperatura: data.temperatura,
+    estadoExtractor: data.estadoExtractor,
     createdAt: new Date()
   };
 
@@ -22,7 +28,7 @@ const nuevoRegistro = {
     ...nuevoRegistro
   };
      }catch(error:any){
-        throw new Error("Error al guardar el registro:");
+        throw new Error("Error al guardar el registro: " + error.message);
     }
 }
 async guardarNivel(nivel:number){
@@ -81,8 +87,11 @@ async getRegistros() {
 
         return {
           id: doc.id,
-          nivel: data.nivel,
+          altura: data.altura ?? data.nivel,
           presion: data.presion,
+          caudal: data.caudal,
+          temperatura: data.temperatura,
+          estadoExtractor: data.estadoExtractor,
           createdAt: timestamp?.toDate ? timestamp.toDate().toISOString() : String(timestamp),
           fechaHora
         };

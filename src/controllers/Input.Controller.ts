@@ -5,31 +5,50 @@ const inputService = new InputService();
 
 export const registrarDatos = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { nivel, presion } = req.body;
+    const { altura, presion, caudal, temperatura, estadoExtractor } = req.body;
+
     // Validación de campos requeridos
-    if (nivel === undefined || presion === undefined) {
+    if (
+      altura === undefined ||
+      presion === undefined ||
+      caudal === undefined ||
+      temperatura === undefined ||
+      estadoExtractor === undefined
+    ) {
       res.status(400).json({
         ok: false,
-        message: 'Los campos "nivel" y "presion" son requeridos en el cuerpo de la petición.'
+        message: 'Los campos "altura", "presion", "caudal", "temperatura" y "estadoExtractor" son requeridos en el cuerpo de la petición.'
       });
       return;
     }
 
     // Validación de tipo de datos
-    const parsedNivel = Number(nivel);
+    const parsedAltura = Number(altura);
     const parsedPresion = Number(presion);
+    const parsedCaudal = Number(caudal);
+    const parsedTemperatura = Number(temperatura);
+    const parsedEstadoExtractor = Number(estadoExtractor);
 
-    if (isNaN(parsedNivel) || isNaN(parsedPresion)) {
+    if (
+      isNaN(parsedAltura) ||
+      isNaN(parsedPresion) ||
+      isNaN(parsedCaudal) ||
+      isNaN(parsedTemperatura) ||
+      isNaN(parsedEstadoExtractor)
+    ) {
       res.status(400).json({
         ok: false,
-        message: 'Los campos "nivel" y "presion" deben ser números válidos.'
+        message: 'Los campos "altura", "presion", "caudal", "temperatura" y "estadoExtractor" deben ser números válidos.'
       });
       return;
     }
 
     const data: RegistroInput = {
-      nivel: parsedNivel,
-      presion: parsedPresion
+      altura: parsedAltura,
+      presion: parsedPresion,
+      caudal: parsedCaudal,
+      temperatura: parsedTemperatura,
+      estadoExtractor: parsedEstadoExtractor
     };
 
     const nuevoRegistro = await inputService.guardarRegistro(data);

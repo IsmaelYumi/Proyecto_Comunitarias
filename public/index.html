@@ -112,9 +112,9 @@
                         </svg>
                     </div>
                     <div class="stat-content">
-                        <span class="stat-label">Último Nivel</span>
+                        <span class="stat-label">Última Altura</span>
                         <span class="stat-value" id="stat-nivel">--</span>
-                        <span class="stat-unit">unidades</span>
+                        <span class="stat-unit">cm / m</span>
                     </div>
                 </div>
                 <div class="stat-card stat-card--presion">
@@ -126,7 +126,44 @@
                     <div class="stat-content">
                         <span class="stat-label">Última Presión</span>
                         <span class="stat-value" id="stat-presion">--</span>
-                        <span class="stat-unit">unidades</span>
+                        <span class="stat-unit">PSI / kPa</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-card--caudal">
+                    <div class="stat-icon">
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+                        </svg>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-label">Último Caudal</span>
+                        <span class="stat-value" id="stat-caudal">--</span>
+                        <span class="stat-unit">L/min</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-card--temperatura">
+                    <div class="stat-icon">
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/>
+                        </svg>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-label">Última Temperatura</span>
+                        <span class="stat-value" id="stat-temperatura">--</span>
+                        <span class="stat-unit">°C</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-card--extractor">
+                    <div class="stat-icon">
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="9"/>
+                            <path d="M12 12L8 8m4 4l4-4m-4 4l-4 4m4-4l4 4"/>
+                        </svg>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-label">Estado Extractor</span>
+                        <div id="stat-extractor" class="stat-status-container">--</div>
+                        <span class="stat-unit">0 = Apagado | 1 = Prendido</span>
                     </div>
                 </div>
                 <div class="stat-card stat-card--total">
@@ -164,7 +201,7 @@
                     <div class="chart-header">
                         <h2 class="chart-title">
                             <span class="chart-dot chart-dot--nivel"></span>
-                            Sensor de Nivel
+                            Sensor de Altura / Nivel
                         </h2>
                         <span class="chart-badge chart-badge--nivel">Tiempo Real</span>
                     </div>
@@ -182,6 +219,30 @@
                     </div>
                     <div class="chart-body">
                         <canvas id="presionChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h2 class="chart-title">
+                            <span class="chart-dot chart-dot--caudal"></span>
+                            Sensor de Caudal
+                        </h2>
+                        <span class="chart-badge chart-badge--caudal">Tiempo Real</span>
+                    </div>
+                    <div class="chart-body">
+                        <canvas id="caudalChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h2 class="chart-title">
+                            <span class="chart-dot chart-dot--temperatura"></span>
+                            Sensor de Temperatura
+                        </h2>
+                        <span class="chart-badge chart-badge--temperatura">Tiempo Real</span>
+                    </div>
+                    <div class="chart-body">
+                        <canvas id="temperaturaChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -231,7 +292,7 @@
                     <div class="chart-header">
                         <h2 class="chart-title">
                             <span class="chart-dot chart-dot--nivel"></span>
-                            Nivel — Histórico
+                            Altura / Nivel — Histórico
                         </h2>
                         <span class="chart-badge" id="filter-badge-nivel">Todos</span>
                     </div>
@@ -251,12 +312,36 @@
                         <canvas id="presionHistChart"></canvas>
                     </div>
                 </div>
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h2 class="chart-title">
+                            <span class="chart-dot chart-dot--caudal"></span>
+                            Caudal — Histórico
+                        </h2>
+                        <span class="chart-badge" id="filter-badge-caudal">Todos</span>
+                    </div>
+                    <div class="chart-body">
+                        <canvas id="caudalHistChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h2 class="chart-title">
+                            <span class="chart-dot chart-dot--temperatura"></span>
+                            Temperatura — Histórico
+                        </h2>
+                        <span class="chart-badge" id="filter-badge-temperatura">Todos</span>
+                    </div>
+                    <div class="chart-body">
+                        <canvas id="temperaturaHistChart"></canvas>
+                    </div>
+                </div>
             </div>
 
             <!-- Data Table -->
             <div class="table-container">
                 <div class="table-header">
-                    <h2 class="table-title">Registros</h2>
+                    <h2 class="table-title">Registros de Sensores</h2>
                     <span class="table-count" id="table-count">0 registros</span>
                 </div>
                 <div class="table-wrapper">
@@ -264,8 +349,11 @@
                         <thead>
                             <tr>
                                 <th>#</th>
-                                <th>Nivel</th>
+                                <th>Altura</th>
                                 <th>Presión</th>
+                                <th>Caudal</th>
+                                <th>Temperatura</th>
+                                <th>Estado Extractor</th>
                                 <th>Fecha y Hora</th>
                             </tr>
                         </thead>

@@ -20,8 +20,12 @@ const state = {
   charts: {
     nivel: null,
     presion: null,
+    caudal: null,
+    temperatura: null,
     nivelHist: null,
     presionHist: null,
+    caudalHist: null,
+    temperaturaHist: null,
   },
   refreshTimer: null,
 };
@@ -43,6 +47,9 @@ const DOM = {
   // Stats
   statNivel: () => document.getElementById('stat-nivel'),
   statPresion: () => document.getElementById('stat-presion'),
+  statCaudal: () => document.getElementById('stat-caudal'),
+  statTemperatura: () => document.getElementById('stat-temperatura'),
+  statExtractor: () => document.getElementById('stat-extractor'),
   statTotal: () => document.getElementById('stat-total'),
   statUpdate: () => document.getElementById('stat-update'),
 
@@ -53,8 +60,12 @@ const DOM = {
   // Charts
   nivelCanvas: () => document.getElementById('nivelChart'),
   presionCanvas: () => document.getElementById('presionChart'),
+  caudalCanvas: () => document.getElementById('caudalChart'),
+  temperaturaCanvas: () => document.getElementById('temperaturaChart'),
   nivelHistCanvas: () => document.getElementById('nivelHistChart'),
   presionHistCanvas: () => document.getElementById('presionHistChart'),
+  caudalHistCanvas: () => document.getElementById('caudalHistChart'),
+  temperaturaHistCanvas: () => document.getElementById('temperaturaHistChart'),
 
   // Filters
   filterBtns: () => document.querySelectorAll('.filter-presets .filter-btn'),
@@ -63,6 +74,8 @@ const DOM = {
   filterApply: () => document.getElementById('filter-apply'),
   filterBadgeNivel: () => document.getElementById('filter-badge-nivel'),
   filterBadgePresion: () => document.getElementById('filter-badge-presion'),
+  filterBadgeCaudal: () => document.getElementById('filter-badge-caudal'),
+  filterBadgeTemperatura: () => document.getElementById('filter-badge-temperatura'),
 
   // Table
   tableBody: () => document.getElementById('table-body'),
@@ -131,12 +144,22 @@ async function fetchRegistros() {
  * fallback to fechaHora for backward compatibility.
  */
 function normalizeRegistro(registro) {
+  const altura = Number(registro.altura ?? registro.nivel ?? 0);
+  const presion = Number(registro.presion ?? 0);
+  const caudal = Number(registro.caudal ?? 0);
+  const temperatura = Number(registro.temperatura ?? 0);
+  const estadoExtractor = Number(registro.estadoExtractor ?? 0);
+
   // If createdAt already exists as ISO, use it directly
   if (registro.createdAt) {
     return {
       id: registro.id,
-      nivel: Number(registro.nivel),
-      presion: Number(registro.presion),
+      altura,
+      nivel: altura,
+      presion,
+      caudal,
+      temperatura,
+      estadoExtractor,
       createdAt: registro.createdAt,
       fechaHora: registro.fechaHora || formatDateTime(registro.createdAt),
     };
@@ -147,8 +170,12 @@ function normalizeRegistro(registro) {
     const parsed = parseFechaHora(registro.fechaHora);
     return {
       id: registro.id,
-      nivel: Number(registro.nivel),
-      presion: Number(registro.presion),
+      altura,
+      nivel: altura,
+      presion,
+      caudal,
+      temperatura,
+      estadoExtractor,
       createdAt: parsed ? parsed.toISOString() : new Date().toISOString(),
       fechaHora: registro.fechaHora,
     };
@@ -157,8 +184,12 @@ function normalizeRegistro(registro) {
   // Last resort
   return {
     ...registro,
-    nivel: Number(registro.nivel),
-    presion: Number(registro.presion),
+    altura,
+    nivel: altura,
+    presion,
+    caudal,
+    temperatura,
+    estadoExtractor,
     createdAt: new Date().toISOString(),
     fechaHora: '--',
   };
@@ -334,6 +365,20 @@ const CHART_COLORS = {
     point: '#f59e0b',
     pointHover: '#fbbf24',
   },
+  caudal: {
+    line: '#00a896',
+    fill: 'rgba(0, 168, 150, 0.08)',
+    fillTop: 'rgba(0, 168, 150, 0.25)',
+    point: '#00a896',
+    pointHover: '#02c39a',
+  },
+  temperatura: {
+    line: '#e74c3c',
+    fill: 'rgba(231, 76, 60, 0.08)',
+    fillTop: 'rgba(231, 76, 60, 0.25)',
+    point: '#e74c3c',
+    pointHover: '#ff6b6b',
+  },
 };
 
 /**
@@ -381,7 +426,7 @@ function getChartOptions(titleText) {
     scales: {
       x: {
         grid: {
-          color: 'rgba(255, 255, 255, 0.04)',
+          color: 'rgba(0, 0, 0, 0.05)',
           drawBorder: false,
         },
         ticks: {
@@ -394,7 +439,7 @@ function getChartOptions(titleText) {
       },
       y: {
         grid: {
-          color: 'rgba(255, 255, 255, 0.04)',
+          color: 'rgba(0, 0, 0, 0.05)',
           drawBorder: false,
         },
         ticks: {
@@ -420,22 +465,38 @@ function getChartOptions(titleText) {
   };
 }
 
+function getFieldValue(r, metric) {
+  switch (metric) {
+    case 'Nivel':
+    case 'Altura':
+      return r.altura ?? r.nivel ?? 0;
+    case 'Presión':
+      return r.presion ?? 0;
+    case 'Caudal':
+      return r.caudal ?? 0;
+    case 'Temperatura':
+      return r.temperatura ?? 0;
+    default:
+      return 0;
+  }
+}
+
 /**
  * Create a new Chart.js line chart instance.
  */
-function createChart(canvasEl, label, colorScheme, data) {
+function createChart(canvasEl, metric, colorScheme, data) {
   const ctx = canvasEl.getContext('2d');
   const gradient = createGradient(ctx, canvasEl, colorScheme.fillTop, colorScheme.fill);
 
   const labels = data.map(r => formatChartLabel(r.createdAt));
-  const values = data.map(r => label === 'Nivel' ? r.nivel : r.presion);
+  const values = data.map(r => getFieldValue(r, metric));
 
   return new Chart(ctx, {
     type: 'line',
     data: {
       labels,
       datasets: [{
-        label,
+        label: metric,
         data: values,
         borderColor: colorScheme.line,
         backgroundColor: gradient,
@@ -449,14 +510,14 @@ function createChart(canvasEl, label, colorScheme, data) {
         fill: true,
       }],
     },
-    options: getChartOptions(label),
+    options: getChartOptions(metric),
   });
 }
 
 /**
  * Update an existing chart with new data.
  */
-function updateChart(chart, label, colorScheme, data) {
+function updateChart(chart, metric, colorScheme, data) {
   if (!chart) return;
 
   const canvas = chart.canvas;
@@ -464,31 +525,49 @@ function updateChart(chart, label, colorScheme, data) {
   const gradient = createGradient(ctx, canvas, colorScheme.fillTop, colorScheme.fill);
 
   chart.data.labels = data.map(r => formatChartLabel(r.createdAt));
-  chart.data.datasets[0].data = data.map(r => label === 'Nivel' ? r.nivel : r.presion);
+  chart.data.datasets[0].data = data.map(r => getFieldValue(r, metric));
   chart.data.datasets[0].backgroundColor = gradient;
   chart.update('none'); // Skip animation on data update for performance
 }
 
 /**
- * Initialize all four chart instances.
+ * Initialize all chart instances.
  */
 function initCharts() {
   const nivelCanvas = DOM.nivelCanvas();
   const presionCanvas = DOM.presionCanvas();
+  const caudalCanvas = DOM.caudalCanvas();
+  const temperaturaCanvas = DOM.temperaturaCanvas();
+
   const nivelHistCanvas = DOM.nivelHistCanvas();
   const presionHistCanvas = DOM.presionHistCanvas();
+  const caudalHistCanvas = DOM.caudalHistCanvas();
+  const temperaturaHistCanvas = DOM.temperaturaHistCanvas();
 
   if (nivelCanvas) {
-    state.charts.nivel = createChart(nivelCanvas, 'Nivel', CHART_COLORS.nivel, []);
+    state.charts.nivel = createChart(nivelCanvas, 'Altura', CHART_COLORS.nivel, []);
   }
   if (presionCanvas) {
     state.charts.presion = createChart(presionCanvas, 'Presión', CHART_COLORS.presion, []);
   }
+  if (caudalCanvas) {
+    state.charts.caudal = createChart(caudalCanvas, 'Caudal', CHART_COLORS.caudal, []);
+  }
+  if (temperaturaCanvas) {
+    state.charts.temperatura = createChart(temperaturaCanvas, 'Temperatura', CHART_COLORS.temperatura, []);
+  }
+
   if (nivelHistCanvas) {
-    state.charts.nivelHist = createChart(nivelHistCanvas, 'Nivel', CHART_COLORS.nivel, []);
+    state.charts.nivelHist = createChart(nivelHistCanvas, 'Altura', CHART_COLORS.nivel, []);
   }
   if (presionHistCanvas) {
     state.charts.presionHist = createChart(presionHistCanvas, 'Presión', CHART_COLORS.presion, []);
+  }
+  if (caudalHistCanvas) {
+    state.charts.caudalHist = createChart(caudalHistCanvas, 'Caudal', CHART_COLORS.caudal, []);
+  }
+  if (temperaturaHistCanvas) {
+    state.charts.temperaturaHist = createChart(temperaturaHistCanvas, 'Temperatura', CHART_COLORS.temperatura, []);
   }
 }
 
@@ -496,16 +575,20 @@ function initCharts() {
  * Update dashboard charts with all data (real-time view).
  */
 function updateDashboardCharts() {
-  updateChart(state.charts.nivel, 'Nivel', CHART_COLORS.nivel, state.allData);
+  updateChart(state.charts.nivel, 'Altura', CHART_COLORS.nivel, state.allData);
   updateChart(state.charts.presion, 'Presión', CHART_COLORS.presion, state.allData);
+  updateChart(state.charts.caudal, 'Caudal', CHART_COLORS.caudal, state.allData);
+  updateChart(state.charts.temperatura, 'Temperatura', CHART_COLORS.temperatura, state.allData);
 }
 
 /**
  * Update historical charts with filtered data.
  */
 function updateHistoricalCharts() {
-  updateChart(state.charts.nivelHist, 'Nivel', CHART_COLORS.nivel, state.filteredData);
+  updateChart(state.charts.nivelHist, 'Altura', CHART_COLORS.nivel, state.filteredData);
   updateChart(state.charts.presionHist, 'Presión', CHART_COLORS.presion, state.filteredData);
+  updateChart(state.charts.caudalHist, 'Caudal', CHART_COLORS.caudal, state.filteredData);
+  updateChart(state.charts.temperaturaHist, 'Temperatura', CHART_COLORS.temperatura, state.filteredData);
 }
 
 
@@ -515,30 +598,53 @@ function updateStats() {
   const data = state.allData;
 
   if (data.length === 0) {
-    DOM.statNivel().textContent = '--';
-    DOM.statPresion().textContent = '--';
-    DOM.statTotal().textContent = '0';
-    DOM.statUpdate().textContent = '--';
+    if (DOM.statNivel()) DOM.statNivel().textContent = '--';
+    if (DOM.statPresion()) DOM.statPresion().textContent = '--';
+    if (DOM.statCaudal()) DOM.statCaudal().textContent = '--';
+    if (DOM.statTemperatura()) DOM.statTemperatura().textContent = '--';
+    if (DOM.statExtractor()) DOM.statExtractor().innerHTML = '--';
+    if (DOM.statTotal()) DOM.statTotal().textContent = '0';
+    if (DOM.statUpdate()) DOM.statUpdate().textContent = '--';
     return;
   }
 
   // Latest record (data is sorted asc, so last element is newest)
   const latest = data[data.length - 1];
 
-  DOM.statNivel().textContent = latest.nivel.toFixed(2);
-  DOM.statPresion().textContent = latest.presion.toFixed(2);
-  DOM.statTotal().textContent = data.length.toLocaleString('es-MX');
+  const alturaVal = Number(latest.altura ?? latest.nivel ?? 0);
+  const presionVal = Number(latest.presion ?? 0);
+  const caudalVal = Number(latest.caudal ?? 0);
+  const tempVal = Number(latest.temperatura ?? 0);
+  const estadoExt = Number(latest.estadoExtractor ?? 0);
+
+  if (DOM.statNivel()) DOM.statNivel().textContent = alturaVal.toFixed(2);
+  if (DOM.statPresion()) DOM.statPresion().textContent = presionVal.toFixed(2);
+  if (DOM.statCaudal()) DOM.statCaudal().textContent = caudalVal.toFixed(2);
+  if (DOM.statTemperatura()) DOM.statTemperatura().textContent = tempVal.toFixed(2);
+
+  if (DOM.statExtractor()) {
+    const isEncendido = estadoExt === 1;
+    DOM.statExtractor().innerHTML = `
+      <span class="badge-extractor ${isEncendido ? 'badge-extractor--on' : 'badge-extractor--off'}">
+        ${isEncendido ? 'PRENDIDO' : 'APAGADO'}
+      </span>
+    `;
+  }
+
+  if (DOM.statTotal()) DOM.statTotal().textContent = data.length.toLocaleString('es-MX');
 
   // Format the latest update time
   const updateTime = new Date(latest.createdAt);
-  DOM.statUpdate().textContent = updateTime.toLocaleString('es-MX', {
-    day: '2-digit',
-    month: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false,
-  });
+  if (DOM.statUpdate()) {
+    DOM.statUpdate().textContent = updateTime.toLocaleString('es-MX', {
+      day: '2-digit',
+      month: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+    });
+  }
 }
 
 
@@ -555,7 +661,9 @@ function renderTable() {
   // Show most recent first in the table
   const data = [...state.filteredData].reverse();
 
-  tableCount.textContent = `${data.length} registro${data.length !== 1 ? 's' : ''}`;
+  if (tableCount) {
+    tableCount.textContent = `${data.length} registro${data.length !== 1 ? 's' : ''}`;
+  }
 
   if (data.length === 0) {
     tbody.innerHTML = '';
@@ -571,10 +679,23 @@ function renderTable() {
   const fragment = document.createDocumentFragment();
   data.forEach((registro, index) => {
     const tr = document.createElement('tr');
+    const altura = Number(registro.altura ?? registro.nivel ?? 0);
+    const presion = Number(registro.presion ?? 0);
+    const caudal = Number(registro.caudal ?? 0);
+    const temperatura = Number(registro.temperatura ?? 0);
+    const isEncendido = Number(registro.estadoExtractor ?? 0) === 1;
+
     tr.innerHTML = `
       <td>${index + 1}</td>
-      <td>${registro.nivel.toFixed(2)}</td>
-      <td>${registro.presion.toFixed(2)}</td>
+      <td>${altura.toFixed(2)}</td>
+      <td>${presion.toFixed(2)}</td>
+      <td>${caudal.toFixed(2)}</td>
+      <td>${temperatura.toFixed(2)} °C</td>
+      <td>
+        <span class="badge-extractor ${isEncendido ? 'badge-extractor--on' : 'badge-extractor--off'}">
+          ${isEncendido ? 'PRENDIDO' : 'APAGADO'}
+        </span>
+      </td>
       <td>${registro.fechaHora || formatDateTime(registro.createdAt)}</td>
     `;
     fragment.appendChild(tr);
@@ -591,8 +712,13 @@ function updateFilterBadges() {
   const label = getFilterLabel(state.currentFilter);
   const badgeNivel = DOM.filterBadgeNivel();
   const badgePresion = DOM.filterBadgePresion();
+  const badgeCaudal = DOM.filterBadgeCaudal();
+  const badgeTemp = DOM.filterBadgeTemperatura();
+
   if (badgeNivel) badgeNivel.textContent = label;
   if (badgePresion) badgePresion.textContent = label;
+  if (badgeCaudal) badgeCaudal.textContent = label;
+  if (badgeTemp) badgeTemp.textContent = label;
 }
 
 
@@ -605,11 +731,14 @@ function exportCSV() {
     return;
   }
 
-  const headers = ['#', 'Nivel', 'Presión', 'Fecha y Hora', 'ID'];
+  const headers = ['#', 'Altura', 'Presión', 'Caudal', 'Temperatura', 'Estado Extractor', 'Fecha y Hora', 'ID'];
   const rows = data.map((r, i) => [
     i + 1,
-    r.nivel,
-    r.presion,
+    r.altura ?? r.nivel ?? 0,
+    r.presion ?? 0,
+    r.caudal ?? 0,
+    r.temperatura ?? 0,
+    Number(r.estadoExtractor) === 1 ? 'PRENDIDO' : 'APAGADO',
     r.fechaHora || formatDateTime(r.createdAt),
     r.id,
   ]);
