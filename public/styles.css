@@ -687,20 +687,187 @@ td:nth-child(3) {
   font-size: 0.85rem;
 }
 
-/* ── Responsive ── */
+/* ── Responsive Mobile & Tablet ── */
 @media (max-width: 768px) {
+  :root {
+    --navbar-height: 56px;
+    --container-padding: 16px;
+  }
+
+  /* Navbar */
+  .navbar {
+    padding: 0 12px;
+  }
+
+  .navbar-title {
+    font-size: 1.05rem;
+  }
+
+  .nav-link {
+    padding: 0 10px;
+    font-size: 0.78rem;
+    gap: 5px;
+  }
+
+  .navbar-status {
+    padding: 3px 8px;
+    font-size: 0.7rem;
+  }
+
+  /* Container */
+  .container {
+    padding-top: calc(var(--navbar-height) + 16px);
+    padding-bottom: 20px;
+  }
+
+  /* Section Header */
+  .section-title {
+    font-size: 1.25rem;
+  }
+
+  /* Stats Grid */
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
   }
+
+  .stat-card {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .stat-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .stat-icon svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .stat-value {
+    font-size: 1.25rem;
+  }
+
+  .stat-value--small {
+    font-size: 0.85rem;
+  }
+
+  /* Charts Grid */
   .charts-grid {
     grid-template-columns: 1fr;
+    gap: 16px;
   }
+
+  .chart-body {
+    height: 240px;
+    padding: 12px;
+  }
+
+  /* Filter Bar */
   .filter-bar {
     flex-direction: column;
     align-items: stretch;
+    gap: 12px;
+    padding: 12px;
   }
+
+  .filter-presets {
+    overflow-x: auto;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .filter-btn {
+    white-space: nowrap;
+    padding: 6px 10px;
+    font-size: 0.8rem;
+  }
+
   .filter-dates {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
     margin-left: 0;
+    width: 100%;
+  }
+
+  .date-field {
+    flex: 1;
+    min-width: 120px;
+  }
+
+  .date-input {
+    width: 100%;
+    padding: 6px 8px;
+    font-size: 0.8rem;
+  }
+
+  .filter-btn--apply {
+    width: 100%;
+    justify-content: center;
+    padding: 8px;
+  }
+
+  .export-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 8px;
+  }
+
+  /* Table */
+  .table-wrapper {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  th, td {
+    padding: 8px 10px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Ultra Small Phones */
+  .navbar-title {
+    font-size: 0.95rem;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .stat-card {
+    padding: 10px 14px;
+  }
+
+  .chart-header {
+    padding: 10px 12px;
+  }
+
+  .chart-title {
+    font-size: 0.9rem;
+  }
+
+  .chart-body {
+    height: 210px;
+  }
+
+  /* Modal */
+  .modal-box {
+    padding: 24px 18px;
+  }
+
+  .modal-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .modal-btn {
+    width: 100%;
+    justify-content: center;
   }
 }
 
