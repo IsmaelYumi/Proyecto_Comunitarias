@@ -63,7 +63,7 @@ async guardarPresion(presion:number){
 }
 async getRegistros() {
     try {
-      const snapshot = await db.collection('Registros').orderBy('createdAt', 'desc').get();
+      const snapshot = await db.collection('Registros').orderBy('createdAt', 'desc').limit(10).get();
       if (snapshot.empty) {
         return [];
       }
